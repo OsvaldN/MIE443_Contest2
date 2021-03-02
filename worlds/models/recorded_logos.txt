@@ -1,0 +1,11 @@
+-1: no logo, 0: Raisin Bran, 1: Toast Crunch, 2: Rice Krispies.
+Logo: -1 	x: -1.99914	y: -2.13877	phi: 2.34732	Duplicate: false
+Logo: 2 	x: 0.38039	y: -2.73982	phi: 2.33063	Duplicate: false
+Logo: 3 	x: 1.53011	y: -3.56579	phi: 1.63649	Duplicate: false
+Logo: 9 	x: 1.30965	y: -4.41082	phi: 1.61734	Duplicate: false
+Logo: -1 	x: 3.19425	y: -3.76127	phi: 2.32988	Duplicate: true
+Logo: 2 	x: 3.34926	y: -1.85018	phi: 2.39652	Duplicate: true
+Logo: -1 	x: 2.74971	y: -0.897636	phi: 3.06048	Duplicate: true
+Logo: 10 	x: 2.3393	y: -1.37714	phi: 2.34732	Duplicate: true
+Logo: 1 	x: 1.93876	y: -1.40896	phi: 0.787552	Duplicate: false
+Logo: 2 	x: 0.183132	y: 0.590897	phi: -3.03299	Duplicate: true
