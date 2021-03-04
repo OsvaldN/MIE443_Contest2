@@ -3,6 +3,7 @@
 ## Notes
 - currently not `using namespace std` anywhere
 - using `#pragma once` in header files rather than `#ifndef ...` as used in contest 1
+- skeleton code printing is done with `std::cout` rather than `ROS_INFO` like in C1 - consider switching to `ROS_INFO`
 
 ## TODO:
 - update **include/TSP.cpp** so that `distMatrix(coords)` uses actual distance from path planning rather than euclidean distance
