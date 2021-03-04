@@ -7,4 +7,5 @@
 ## TODO:
 - update **include/TSP.cpp** so that `distMatrix(coords)` uses actual distance from path planning rather than euclidean distance
 - figure out robot starting position and modify **src/contest2.cpp** so that this position is the first one pushed to `positions`, currently assumed to be (0.0, 0.0)
+- rotate the planned path in **src/contest2.cpp** so that it starts at the starting position.
 - try other TSP solvers?
