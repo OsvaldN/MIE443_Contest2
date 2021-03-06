@@ -63,7 +63,7 @@ std::tuple<std::vector<int>, float> greedy(std::vector<std::vector<float>> dM, i
     return std::make_tuple(path, totalCost);
 }
 
-std::vector<int> bestGreedy(std::vector<std::vector<float>> dM, bool verbose){
+std::vector<int> bestGreedy(std::vector<std::vector<float>> dM, bool verbose = true){
     /*
     finds best greedy solution to TSP by solving greedy problem from each start node
     dM: NxN std::vector of distances between N vertices
@@ -77,11 +77,11 @@ std::vector<int> bestGreedy(std::vector<std::vector<float>> dM, bool verbose){
         
         //TODO: import ROS_INFO and print using that
         if (verbose) {
-            std::cout << "path starting at " << i << ": [";
+            cout << "path starting at " << i << ": [";
             for (int j=0;j<std::get<0>(circTuple).size();j++){
-                std::cout << std::get<0>(circTuple)[j] << " ";
+                cout << std::get<0>(circTuple)[j] << " ";
             }
-            std::cout << "] with cost:" << std::get<1>(circTuple) << std::endl;
+            cout << "] with cost:" << std::get<1>(circTuple) << std::endl;
         }
         
         if (std::get<1>(circTuple) < lowestCost){

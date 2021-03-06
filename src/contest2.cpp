@@ -10,8 +10,11 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "contest2");
     ros::NodeHandle n;
     // Robot pose object + subscriber.
-    RobotPose robotPose(0,0,0);
-    ros::Subscriber amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
+
+    //TODO: remove
+    //RobotPose robotPose(0,0,0);
+    //ros::Subscriber amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
+
     // Initialize box coordinates and templates
     Boxes boxes; 
     if(!boxes.load_coords() || !boxes.load_templates()) {
@@ -42,6 +45,8 @@ int main(int argc, char** argv) {
     }
     std::cout << "]" << std::endl;
 
+    Navigation nav(n);
+    nav.moveToGoal(1,1,1);
     // Initialize image objectand subscriber.
     ImagePipeline imagePipeline(n);
     // Execute strategy.
