@@ -54,8 +54,9 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    // positions vector holds default "poses" (x,y,phi) to view each box. No random jiggle.
     std::vector<std::vector<float>> positions;
-    //push starting position, I am assuming it is 0,0 from robotPose line?
+    //push starting position, this does not generalize to new positions
     positions.push_back({0, 0, 0});
 
     std::vector<float> viewPose;
@@ -64,11 +65,16 @@ int main(int argc, char** argv) {
         std::cout << i << " x: " << boxes.coords[i][0] << " y: " << boxes.coords[i][1] << " z: " 
                   << boxes.coords[i][2] << std::endl;
 
-        viewPose = getViewPose(boxes.coords[i][0], boxes.coords[i][1], boxes.coords[i][2], false, false);
-        positions.push_back(viewPose);
+        // get "default" position to view the box
+	viewPose = getViewPose(boxes.coords[i][0], boxes.coords[i][1], boxes.coords[i][2], false, false);
+        // store "default" positions in the order they appear in the boxes instance (with home at index 0)
+	positions.push_back(viewPose);
     }
 
+    // dM holds a matrix of euclidean distances between positions
     std::vector<std::vector<float>> dM = distMatrix(positions);
+    // path is vector of indices in positions that represents the planned route
+    // the route aleays starts and ends at positions[0], the "home"
     std::vector<int> path = bestGreedy(dM);
     
     // show planned path
@@ -78,6 +84,7 @@ int main(int argc, char** argv) {
     }
     std::cout << "]" << std::endl;
 
+    // instantiate a Navigation object
     Navigation nav(n);
     
     // prototype moving alg, move to nav class when working
