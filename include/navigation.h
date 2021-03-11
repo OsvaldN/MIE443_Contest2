@@ -3,6 +3,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/GetPlan.h>
 #include <robot_pose.h>
 #include "ros/ros.h"
 
@@ -22,6 +23,8 @@ class Navigation {
 		ros::Publisher vel_pub;
 
 		static bool moveToGoal(float xGoal, float yGoal, float phiGoal);
+		bool checkPath(float xGoal, float yGoal, float phiGoal);
+		
 		void VelPub(float angular, float linear);
 		void localizeSpin();
 };

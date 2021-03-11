@@ -8,6 +8,7 @@ float eucDist(float x1, float y1, float x2, float y2){
 
 std::vector<std::vector<float>> distMatrix(std::vector<std::vector<float>> coords) {
     // Creates a NxN distance matrix from an (N,2) std::vector of coordinates
+    // if passing (N,3) std::vector of coords, the last coord value (phi) will be ignored
     int posCount = coords.size();
     std::vector<std::vector<float>> dM(posCount, std::vector<float> (posCount, 0));
     
@@ -56,14 +57,18 @@ std::tuple<std::vector<int>, float> greedy(std::vector<std::vector<float>> dM, i
         totalCost += greedyCost;
     }
     
+    //rotate path to start at home (position 0)
+    int rotation = std::distance(path.begin(), std::find(path.begin(), path.end(), 0));
+    std::rotate(path.begin(), path.begin() + rotation, path.end());
+
     //return home
-    path.push_back(start);
+    path.push_back(0);
     totalCost += dM[loc][start];
     
     return std::make_tuple(path, totalCost);
 }
 
-std::vector<int> bestGreedy(std::vector<std::vector<float>> dM, bool verbose = true){
+std::vector<int> bestGreedy(std::vector<std::vector<float>> dM, bool verbose){
     /*
     finds best greedy solution to TSP by solving greedy problem from each start node
     dM: NxN std::vector of distances between N vertices
@@ -77,11 +82,11 @@ std::vector<int> bestGreedy(std::vector<std::vector<float>> dM, bool verbose = t
         
         //TODO: import ROS_INFO and print using that
         if (verbose) {
-            cout << "path starting at " << i << ": [";
+            std::cout << "path starting at " << i << ": [";
             for (int j=0;j<std::get<0>(circTuple).size();j++){
-                cout << std::get<0>(circTuple)[j] << " ";
+                std::cout << std::get<0>(circTuple)[j] << " ";
             }
-            cout << "] with cost:" << std::get<1>(circTuple) << std::endl;
+            std::cout << "] with cost:" << std::get<1>(circTuple) << std::endl;
         }
         
         if (std::get<1>(circTuple) < lowestCost){
