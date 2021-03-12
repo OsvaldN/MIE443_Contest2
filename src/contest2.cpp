@@ -7,6 +7,7 @@
 #include <vector>
 #include <math.h>
 #include <stdlib.h>
+#include <chrono>
 
 #define VIEWDIST (0.25)
 #define VIEWRANGE (0.3)
@@ -46,6 +47,7 @@ int main(int argc, char** argv) {
     // Setup ROS.
     ros::init(argc, argv, "contest2");
     ros::NodeHandle n;
+    bool verbose = true; // In Debug mode, set to true
 
     // Initialize box coordinates and templates
     Boxes boxes; 
@@ -61,9 +63,11 @@ int main(int argc, char** argv) {
 
     std::vector<float> viewPose;
     for(int i = 0; i < boxes.coords.size(); ++i) {
-        std::cout << "Box coordinates: " << std::endl;
-        std::cout << i << " x: " << boxes.coords[i][0] << " y: " << boxes.coords[i][1] << " z: " 
-                  << boxes.coords[i][2] << std::endl;
+        if (verbose) {
+            std::cout << "Box coordinates: " << std::endl;
+            std::cout << i << " x: " << boxes.coords[i][0] << " y: " << boxes.coords[i][1] << " z: " 
+                    << boxes.coords[i][2] << std::endl;
+        }
 
         // get "default" position to view the box
 	viewPose = getViewPose(boxes.coords[i][0], boxes.coords[i][1], boxes.coords[i][2], false, false);
@@ -76,7 +80,7 @@ int main(int argc, char** argv) {
     // path is vector of indices in positions that represents the planned route
     // the route aleays starts and ends at positions[0], the "home"
     std::vector<int> path = bestGreedy(dM);
-    
+
     // show planned path
     std::cout << "planned path: [";
     for (int i=0;i<path.size();i++){
@@ -84,47 +88,50 @@ int main(int argc, char** argv) {
     }
     std::cout << "]" << std::endl;
 
-    // instantiate a Navigation object
-    Navigation nav(n);
-    
-    // prototype moving alg, move to nav class when working
-    std::vector<float> randPose;
-    for (int i=0;i<path.size();i++){
-	
-	nav.moveToGoal(positions[i][0], positions[i][1], positions[i][2]);
-
-	/*
-        // try to reach original target pose
-        if (nav.checkPath(positions[i][0], positions[i][1], positions[i][2])){
-            // move to original target
-            nav.moveToGoal(positions[i][0], positions[i][1], positions[i][2]);
-        }
-        else {
-            // get a random modification to original viewpose
-            randPose = getViewPose(boxes.coords[path[i]][0], boxes.coords[path[i]][1], boxes.coords[path[i]][2], true, true);
-            
-	    // This while loop continuosly fails
-	    while (!(nav.checkPath(randPose[0], randPose[1], randPose[2]))){
-                // checkPath failed, try new pose
-                randPose = getViewPose(boxes.coords[path[i]][0], boxes.coords[path[i]][1], boxes.coords[path[i]][2], true, true);
-            }
-	    
-        } */
-
-        // Robot is now looking at box represented by path[i]
-        
-    }
+    // Initiate a counter to iterate through the paths
+    int path_counter = 0;
 
     // Initialize image objectand subscriber.
     ImagePipeline imagePipeline(n);
+
+    // Create a timer in Debug Mode to time the program execution
+    std::chrono::time_point<std::chrono::system_clock> start;
+    start = std::chrono::system_clock::now();
+    uint64_t secondsElapsed = 0;
+
     // Execute strategy.
     while(ros::ok()) {
+
+        // Loop through the paths until we reach the end of the path array
+        if (path_counter > path.size()-1){
+            break;
+        }
+
         ros::spinOnce();
-        /***YOUR CODE HERE***/
-        // Use: boxes.coords
-        // Use: robotPose.x, robotPose.y, robotPose.phi
-        imagePipeline.getTemplateID(boxes);
+
+        // Navigation code here
+        if (verbose) {
+            ROS_INFO("DEBUG: Initiating move to path index: %d", path_counter);
+        }
+
+	    Navigation::moveToGoal(positions[path[path_counter]][0], positions[path[path_counter]][1], positions[path[path_counter]][2]);
+
+        if (verbose) {
+            ROS_INFO("DEBUG: Finished moving to path index: %d", path_counter);
+        }
+        
+        path_counter += 1;
+
+        // NOTE: Insert image detection functionality here.
+        //imagePipeline.getTemplateID(boxes);
         ros::Duration(0.01).sleep();
     }
+
+    // Print out the elapsed program execution time
+    if (verbose) {
+        secondsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now()-start).count();
+        std::cout << "Program exeuction took this many seconds: " << secondsElapsed << '\n';
+    }
+
     return 0;
 }
