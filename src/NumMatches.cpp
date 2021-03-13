@@ -4,7 +4,7 @@
 #define HTHRESH (150)
 #define minDistTHRESH (0.1)
 #define SKEWFACTOR (4)
-#define BOX_TOLERANCE (0.0001)
+#define BOX_TOLERANCE (10)
 
 using namespace cv;
 using namespace cv::xfeatures2d;
@@ -54,6 +54,8 @@ bool inBox(cv::Point2f A, cv::Point2f B, cv::Point2f C, cv::Point2f D, cv::Point
 //////////////////
 // David's Code //
 //////////////////
+
+
 
 int NumMatches(cv::Mat& img_object, cv::Mat& img_scene, int minHessian, bool visual) {
 
@@ -145,6 +147,7 @@ int NumMatches(cv::Mat& img_object, cv::Mat& img_scene, int minHessian, bool vis
                 if (curr_distance > max_distance){
                     max_distance = curr_distance;
                 }
+                /*
 
                 // check the max x and y coordinates of the image
 
@@ -160,23 +163,30 @@ int NumMatches(cv::Mat& img_object, cv::Mat& img_scene, int minHessian, bool vis
                 if (scene_corners[i].x < min_scene_x){
                     min_scene_x = scene_corners[i].x;
                 }
+                */
 
             }
 
             // if the points are all bundles on top of each other then remove them
             // and the matching points are very far from the scene times the homogrpahy then remove those too
 
-            // if matches are outside the max x and y coordiantes of the found image then remove them
+            // remove if matches are outside the image (based on using the areas of the triangles made to each corner)
 
             std::vector<Point2f> scene_better;
+            float ImageArea = quadArea(scene_corners[0], scene_corners[1], scene_corners[2], scene_corners[3]); // fide the area of the box
 
             for (int i = 1; i < scene.size(); i++)
             {
                 if (eucDist(scene[i].x, scene[i].y, scene[i-1].x, scene[i-1].y) > minDistTHRESH && eucDist(scene[i].x, scene[i].y, scene_ideal[i].x, scene_ideal[i].y) < HTHRESH)
-                {        
+                {   
+                    if (inBox(scene_corners[0], scene_corners[1], scene_corners[2], scene_corners[3], scene[i], ImageArea)){
+                        scene_better.push_back(scene[i]);
+                    }     
+                    /*
                     if (scene[i].y < max_scene_y && scene[i].y > min_scene_y && scene[i].x < max_scene_x && scene[i].x > min_scene_x){
                         scene_better.push_back(scene[i]);
                     }
+                    */
                 }
                 
             }
