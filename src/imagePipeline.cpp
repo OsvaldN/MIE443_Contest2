@@ -1,5 +1,8 @@
 #include <imagePipeline.h>
 
+#define minHessian (350) // default vale is 400 (high is better matches but less points)
+#define minThreshMatches (20) //to detect whether an image was found
+
 #define IMAGE_TYPE sensor_msgs::image_encodings::BGR8
 #define IMAGE_TOPIC "camera/rgb/image_raw" // kinect:"camera/rgb/image_raw" webcam:"camera/image"
 
@@ -9,6 +12,7 @@ ImagePipeline::ImagePipeline(ros::NodeHandle& n) {
     isValid = false;
 }
 
+//get the image of from the kinect sensor
 void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
     try {
         if(isValid) {
@@ -23,7 +27,7 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
     }    
 }
 
-int ImagePipeline::getTemplateID(Boxes& boxes) {
+int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a copy of boxes is feed into this function
     int template_id = -1;
     if(!isValid) {
         std::cout << "ERROR: INVALID IMAGE!" << std::endl;
@@ -33,10 +37,65 @@ int ImagePipeline::getTemplateID(Boxes& boxes) {
         std::cout << "img.rows:" << img.rows << std::endl;
         std::cout << "img.cols:" << img.cols << std::endl;
     } else {
-        /***YOUR CODE HERE***/
-        // Use: boxes.templates
-        cv::imshow("view", img);
-        cv::waitKey(10);
+        // call function to find the best match image
+
+        // note - img is a image from the scene, and boxes.template[x] is an image form the template list (format is cv::MAT)
+
+        // search through the templates and see which is the best match
+        int max_matches = 0;
+        int next_max_matches = 0; // the the 2nd most matches
+        int confidence = 0; //save the confidence level of the choosen template
+
+        for (int i = 0; i < boxes.templates.size(); i++){
+
+            int good_matches = NumMatches(boxes.templates[i], img, minHessian, false);
+
+            if (good_matches > max_matches){
+                template_id = i;
+                next_max_matches = max_matches;
+                max_matches = good_matches;
+            }
+            else if (good_matches > next_max_matches){
+                next_max_matches = good_matches;
+            }
+
+            if (verbose){
+                ROS_INFO("The number of good matches is: %i for tag number: %i", good_matches, i+1);
+            }
+
+        }
+
+        confidence = (-500000/((max_matches*minHessian) + 14286)) + 35 + (-1500/((max_matches - next_max_matches) + 23.08)) + 65;
+
+
+
+        if (max_matches > minThreshMatches)
+        {
+            if (visual)
+            {
+                max_matches = NumMatches(boxes.templates[template_id], img, minHessian, true);
+            }
+            template_id = template_id + 1;
+
+            if (verbose)
+            {
+                ROS_INFO("The best match template_id is %i and the confidence level is %i percent", template_id, confidence);
+            }
+        }
+        else
+        {
+            template_id = -1;
+
+            if (verbose)
+            {
+                ROS_INFO("No image was found");
+            }
+        }
+
+       
+
+        cv::waitKey(); // STOPS THE PROGRAM !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
     }  
     return template_id;
 }
