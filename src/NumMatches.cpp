@@ -1,13 +1,59 @@
 #include <NumMatches.h>
+#include <math.h>
 
 #define HTHRESH (150)
 #define minDistTHRESH (0.1)
 #define SKEWFACTOR (4)
+#define BOX_TOLERANCE (0.0001)
 
 using namespace cv;
 using namespace cv::xfeatures2d;
 using std::cout;
 using std::endl;
+
+
+///////////////////////
+// Osvald's addition //
+///////////////////////
+
+float triArea(cv::Point2f A, cv::Point2f B, cv::Point2f C) {
+    /*
+    Computes area of triangle ABC
+    inputs: three cv::Point2f corners of a triangle
+    - computes cross-product AB x BC and halves the results
+    */
+    return fabs( A.x*(B.y-C.y) + B.x*(C.y-A.y) + C.x*(A.y-B.y));
+}
+
+float quadArea(cv::Point2f A, cv::Point2f B, cv::Point2f C, cv::Point2f D){
+    /*
+    Computes the area of a convex quadrilateral
+    inputs: four cv::Point2f corners of a quadrilateral
+            (!) These points must be adjacent (edges are AB, BC, CD, DA)
+    - splits the quadrilateral into two triangles and sums their areas
+    */
+    return triArea(A,B,C) + triArea(C,D,A);
+}
+
+bool inBox(cv::Point2f A, cv::Point2f B, cv::Point2f C, cv::Point2f D, cv::Point2f P, float boxArea){
+    /*
+    Checks if point P is in the qudrilateral formed by ABCD
+    inputs: four cv::Point2f (ABCD) describing quadrilateral
+            one cv::Point2f, P describing a point to check
+            float boxArea, the area of ABCD from quadArea()
+    - Computes the area of triangles ABP, BCP, CDP, DAP
+        if this area exceeds the area of ABCD, P is not contained by ABCD
+    - boxArea is passed in so that if multiple points are checked on the same
+      quadrilateral the quadArea computation is not redone needlessly
+    */
+    float totalArea = triArea(A,B,P) + triArea(B,C,P)
+                    + triArea(C,D,P) + triArea(D,A,P);
+    return totalArea <= (boxArea + BOX_TOLERANCE);
+}
+
+//////////////////
+// David's Code //
+//////////////////
 
 int NumMatches(cv::Mat& img_object, cv::Mat& img_scene, int minHessian, bool visual) {
 
