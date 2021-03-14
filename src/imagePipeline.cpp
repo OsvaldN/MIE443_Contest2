@@ -41,14 +41,19 @@ int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a
 
         // note - img is a image from the scene, and boxes.template[x] is an image form the template list (format is cv::MAT)
 
+        // convert image to grey scale
+        cv::Mat grey_img;
+        cv::cvtColor(img, grey_img, CV_BGR2GRAY);
+
         // search through the templates and see which is the best match
+
         int max_matches = 0;
         int next_max_matches = 0; // the the 2nd most matches
         int confidence = 0; //save the confidence level of the choosen template
 
         for (int i = 0; i < boxes.templates.size(); i++){
 
-            int good_matches = NumMatches(boxes.templates[i], img, minHessian, false);
+            int good_matches = NumMatches(boxes.templates[i], grey_img, minHessian, false);
 
             if (good_matches > max_matches){
                 template_id = i;
@@ -67,13 +72,11 @@ int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a
 
         confidence = (-500000/((max_matches*minHessian) + 14286)) + 35 + (-1500/((max_matches - next_max_matches) + 23.08)) + 65;
 
-
-
         if (max_matches > minThreshMatches)
         {
             if (visual)
             {
-                max_matches = NumMatches(boxes.templates[template_id], img, minHessian, true);
+                max_matches = NumMatches(boxes.templates[template_id], grey_img, minHessian, true);
             }
             template_id = template_id + 1;
 
@@ -91,8 +94,6 @@ int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a
                 ROS_INFO("No image was found");
             }
         }
-
-       
 
         cv::waitKey(); // STOPS THE PROGRAM !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
