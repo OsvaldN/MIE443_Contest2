@@ -90,6 +90,7 @@ int main(int argc, char** argv) {
 
     // Initiate a counter to iterate through the paths
     int path_counter = 0;
+    bool navigation_ret = false; // Navigation error handler
 
     // Initialize image objectand subscriber.
     ImagePipeline imagePipeline(n);
@@ -114,15 +115,30 @@ int main(int argc, char** argv) {
             ROS_INFO("DEBUG: Initiating move to path index: %d", path_counter);
         }
 
-	    Navigation::moveToGoal(positions[path[path_counter]][0], positions[path[path_counter]][1], positions[path[path_counter]][2]);
+	    navigation_ret = Navigation::moveToGoal(positions[path[path_counter]][0], positions[path[path_counter]][1], positions[path[path_counter]][2]);
+
+        // If move_base fails to move to the target location, enter error handling code block
+        while (!navigation_ret) {
+            if (verbose) {
+                ROS_INFO("Error handling Navigation::move_goal. Starting from home position, and re-attempting to move to position index: %d", path_counter);
+            }
+
+            // Step 1: Move robot to the home starting position - In a position that it has successfully moved from already
+	        Navigation::moveToGoal(positions[path[0]][0], positions[path[0]][1], positions[path[0]][2]);
+            // Step 2: Move to the problem coordinate from the home position.
+	        navigation_ret = Navigation::moveToGoal(positions[path[path_counter]][0], positions[path[path_counter]][1], positions[path[path_counter]][2]);
+        }
 
         if (verbose) {
             ROS_INFO("DEBUG: Finished moving to path index: %d", path_counter);
         }
-        
-        path_counter += 1;
+        path_counter += 1; // The path_counter will iterate through the path array that was generated from TSP path planning algorithm
 
-        // NOTE: Insert image detection functionality here.
+        /** ***** NOTE: IMAGE DETECTION FUNCTION CALL SHOULD GO HERE *****
+        At this point, the robot has successfully reached the target location. 
+        You can perform image detection at this point, before allowing the robot to move to the next location.
+        **/
+
         //imagePipeline.getTemplateID(boxes);
         ros::Duration(0.01).sleep();
     }
