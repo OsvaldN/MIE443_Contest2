@@ -13,6 +13,11 @@
 #define VIEWRANGE (0.3)
 #define VIEWANGLERANGE (M_PI/4.0)
 
+// Macros for the position parsing from path planner
+#define X_COORD 0
+#define Y_COORD 1
+#define PHI 2
+
 
 std::vector<float> getViewPose(float boxX, float boxY, float boxPhi, bool random = false, bool verbose = true){
     /* 
@@ -89,7 +94,9 @@ int main(int argc, char** argv) {
     std::cout << "]" << std::endl;
 
     // Initiate a counter to iterate through the paths
-    int path_counter = 0;
+    int path_counter = 1; // Start at index 1 (and not index 0) for the path array iteration to skip the starting home location.
+    bool navigation_ret = false; // Navigation error handler
+    bool path_reattempt = false; // Navigation re_attempt flag
 
     // Initialize image objectand subscriber.
     ImagePipeline imagePipeline(n);
@@ -114,15 +121,36 @@ int main(int argc, char** argv) {
             ROS_INFO("DEBUG: Initiating move to path index: %d", path_counter);
         }
 
-	    Navigation::moveToGoal(positions[path[path_counter]][0], positions[path[path_counter]][1], positions[path[path_counter]][2]);
+	    navigation_ret = Navigation::moveToGoal(positions[path[path_counter]][X_COORD], positions[path[path_counter]][Y_COORD], positions[path[path_counter]][PHI]);
+        path_reattempt = false;
+
+        // If move_base fails to move to the target location, enter error handling code block
+        while (!navigation_ret) {
+            if (verbose) {
+                ROS_INFO("Error handling Navigation::move_goal. Starting from home position, and re-attempting to move to position index: %d", path_counter);
+            }
+
+            if (path_reattempt) { // If the path has already been attempted, than skip to avoid stuck in while loop.
+                break;
+            }
+
+            // Step 1: Move robot to the home starting position - In a position that it has successfully moved from already
+	        Navigation::moveToGoal(positions[path[0]][X_COORD], positions[path[0]][Y_COORD], positions[path[0]][PHI]);
+            // Step 2: Move to the problem coordinate from the home position.
+	        navigation_ret = Navigation::moveToGoal(positions[path[path_counter]][X_COORD], positions[path[path_counter]][Y_COORD], positions[path[path_counter]][PHI]);
+            path_reattempt = true;
+        }
 
         if (verbose) {
             ROS_INFO("DEBUG: Finished moving to path index: %d", path_counter);
         }
-        
-        path_counter += 1;
+        path_counter += 1; // The path_counter will iterate through the path array that was generated from TSP path planning algorithm
 
-        // NOTE: Insert image detection functionality here.
+        /** ***** NOTE: IMAGE DETECTION FUNCTION CALL SHOULD GO HERE *****
+        At this point, the robot has successfully reached the target location. 
+        You can perform image detection at this point, before allowing the robot to move to the next location.
+        **/
+
         //imagePipeline.getTemplateID(boxes);
         ros::Duration(0.01).sleep();
     }
