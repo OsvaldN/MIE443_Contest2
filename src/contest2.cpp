@@ -3,7 +3,6 @@
 #include <robot_pose.h>
 #include <imagePipeline.h>
 #include <TSP.h>
-
 #include <vector>
 #include <math.h>
 #include <stdlib.h>
@@ -55,6 +54,9 @@ int main(int argc, char** argv) {
     bool verbose = true; // In Debug mode, set to true
 
     // Initialize box coordinates and templates
+    // get the coordinate of the boxs and the image templates to compare with
+    // boxes.coords is a 2-D vector containing the boxes coordinates (10 boxes by 3 coodinates).  boxes.coords [0][2] is the first object's orientation
+    // boxes.templates is a 1-D vector containing the templates
     Boxes boxes; 
     if(!boxes.load_coords() || !boxes.load_templates()) {
         std::cout << "ERROR: could not load coords or templates" << std::endl;
@@ -107,6 +109,7 @@ int main(int argc, char** argv) {
     uint64_t secondsElapsed = 0;
 
     // Execute strategy.
+    
     while(ros::ok()) {
 
         // Loop through the paths until we reach the end of the path array

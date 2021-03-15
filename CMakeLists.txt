@@ -27,7 +27,8 @@ add_executable(contest2
     src/navigation.cpp
     src/robot_pose.cpp
     src/imagePipeline.cpp
-    src/TSP.cpp)
+    src/TSP.cpp
+    src/NumMatches.cpp)
 target_link_libraries(contest2 
     ${catkin_LIBRARIES}  
     ${OpenCV_LIBRARIES}  
@@ -38,4 +39,11 @@ add_executable(webcam_publisher
     src/webcam_publisher.cpp)
 target_link_libraries(webcam_publisher  
     ${catkin_LIBRARIES}  
+    ${OpenCV_LIBRARIES})
+
+#  OpenCV Demo
+add_executable(opencv_demo 
+    src/opencv_demo)
+target_link_libraries(opencv_demo
+    ${catkin_LIBRARIES}
     ${OpenCV_LIBRARIES})
