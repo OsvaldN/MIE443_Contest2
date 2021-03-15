@@ -8,6 +8,7 @@ float eucDist(float x1, float y1, float x2, float y2){
 
 std::vector<std::vector<float>> distMatrix(std::vector<std::vector<float>> coords) {
     // Creates a NxN distance matrix from an (N,2) std::vector of coordinates
+    // if passing (N,3) std::vector of coords, the last coord value (phi) will be ignored
     int posCount = coords.size();
     std::vector<std::vector<float>> dM(posCount, std::vector<float> (posCount, 0));
     
@@ -56,8 +57,12 @@ std::tuple<std::vector<int>, float> greedy(std::vector<std::vector<float>> dM, i
         totalCost += greedyCost;
     }
     
+    //rotate path to start at home (position 0)
+    int rotation = std::distance(path.begin(), std::find(path.begin(), path.end(), 0));
+    std::rotate(path.begin(), path.begin() + rotation, path.end());
+
     //return home
-    path.push_back(start);
+    path.push_back(0);
     totalCost += dM[loc][start];
     
     return std::make_tuple(path, totalCost);
