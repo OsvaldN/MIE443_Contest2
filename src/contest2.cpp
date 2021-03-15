@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <chrono>
+#include <control.h>
 
 #define VIEWDIST (0.25)
 #define VIEWRANGE (0.3)
@@ -51,6 +52,7 @@ int main(int argc, char** argv) {
     // Setup ROS.
     ros::init(argc, argv, "contest2");
     ros::NodeHandle n;
+    ros::Publisher vel_pub = n.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
     bool verbose = true; // In Debug mode, set to true
 
     // Initialize box coordinates and templates
@@ -62,6 +64,19 @@ int main(int argc, char** argv) {
         std::cout << "ERROR: could not load coords or templates" << std::endl;
         return -1;
     }
+
+    // instantiate robot Pose object
+    RobotPose robotPose(0,0,0);
+
+    // print location estimate and rotate the 
+    std::cout << "Confirming location. Initial Esimate: ";
+    std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
+            << robotPose.phi << ")." << std::endl;
+    //rotForTime(3, &vel_pub, true); //rotates for that number of seconds (at pi/6 rad/s)
+    rotForTime(3.0, &vel_pub, verbose); // rotate for 3 seconds
+    std::cout << "Confirming location. New Esimate: ";
+    std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
+            << robotPose.phi << ")." << std::endl;
 
     // positions vector holds default "poses" (x,y,phi) to view each box. No random jiggle.
     std::vector<std::vector<float>> positions;

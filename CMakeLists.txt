@@ -28,7 +28,8 @@ add_executable(contest2
     src/robot_pose.cpp
     src/imagePipeline.cpp
     src/TSP.cpp
-    src/NumMatches.cpp)
+    src/NumMatches.cpp
+    src/control.cpp)
 target_link_libraries(contest2 
     ${catkin_LIBRARIES}  
     ${OpenCV_LIBRARIES}  
