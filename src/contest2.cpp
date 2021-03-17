@@ -82,15 +82,20 @@ int main(int argc, char** argv) {
     RobotPose robotPose(0,0,0);
 
     // print location estimate and rotate the 
-    std::cout << "Confirming location. Initial Esimate: ";
-    std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
+    if (verbose) {
+        std::cout << "Confirming location. Initial Esimate: ";
+        std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
             << robotPose.phi << ")." << std::endl;
-    //rotForTime(3, &vel_pub, true); //rotates for that number of seconds (at pi/6 rad/s)
+    }
+    
     rotForTime(3.0, &vel_pub, verbose); // rotate for 3 seconds
-    std::cout << "Confirming location. New Esimate: ";
-    std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
-            << robotPose.phi << ")." << std::endl;
 
+    if (verbose) {
+        std::cout << "Confirming location. New Esimate: ";
+        std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
+            << robotPose.phi << ")." << std::endl;
+    }
+   
     // positions vector holds default "poses" (x,y,phi) to view each box. No random jiggle.
     std::vector<std::vector<float>> positions;
     //push starting position, this does not generalize to new positions
@@ -201,7 +206,7 @@ int main(int argc, char** argv) {
     // Print out the elapsed program execution time
     if (verbose) {
         secondsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now()-start).count();
-        std::cout << "Program exeuction took this many seconds: " << secondsElapsed << '\n';
+        std::cout << "Program Terminated - Reached start location\nProgram exeuction took this many seconds: " << secondsElapsed << '\n';
     }
 
     return 0;
