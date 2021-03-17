@@ -9,9 +9,15 @@
 #include <chrono>
 #include <control.h>
 
+// for writing in files
+#include <iostream>
+#include <fstream>
+using namespace std;
+
 #define VIEWDIST (0.25)
 #define VIEWRANGE (0.3)
 #define VIEWANGLERANGE (M_PI/4.0)
+#define OutputFileName "Output_file.txt"
 
 // Macros for the position parsing from path planner
 #define X_COORD 0
@@ -54,6 +60,13 @@ int main(int argc, char** argv) {
     ros::NodeHandle n;
     ros::Publisher vel_pub = n.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
     bool verbose = true; // In Debug mode, set to true
+
+    // Used to make the output file
+    // Make and overwrite any files 
+    ofstream myfile;
+    myfile.open (OutputFileName);
+    myfile << "This is the output file which will contain the output for Contest 2 run.\n";
+    myfile.close();
 
     // Initialize box coordinates and templates
     // get the coordinate of the boxs and the image templates to compare with
@@ -168,8 +181,20 @@ int main(int argc, char** argv) {
         At this point, the robot has successfully reached the target location. 
         You can perform image detection at this point, before allowing the robot to move to the next location.
         **/
+        ros::spinOnce();
+        int TemplateID = imagePipeline.getTemplateID(boxes, false, true);
 
-        //imagePipeline.getTemplateID(boxes);
+        if (TemplateID > -1){
+            myfile.open(OutputFileName, std::ios_base::app); // append instead of overwrite
+            myfile << "The tag image at location: " << "XXX " << "is: Tag_" << TemplateID << "\n";
+            myfile.close();
+        }
+        else{
+            myfile.open(OutputFileName, std::ios_base::app); // append instead of overwrite
+            myfile << "The tag image at location: " << "XXX " << "is: blank \n";
+            myfile.close();
+        }
+
         ros::Duration(0.01).sleep();
     }
 

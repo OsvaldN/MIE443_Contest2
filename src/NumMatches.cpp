@@ -70,6 +70,11 @@ int NumMatches(cv::Mat& img_object, cv::Mat& img_scene, int minHessian, bool vis
     detector->detectAndCompute( img_object, noArray(), keypoints_object, descriptors_object );
     detector->detectAndCompute( img_scene, noArray(), keypoints_scene, descriptors_scene );
 
+    // added to prevent OpenCV Error: Unsupported format or combination of formats (type=0) in buildIndex_
+    if (descriptors_object.empty() || descriptors_scene.empty()){ 
+        return 0;
+    }
+
     //-- Step 2: Matching descriptor vectors with a FLANN based matcher
     // Since SURF is a floating-point descriptor NORM_L2 is used
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);

@@ -94,8 +94,6 @@ int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a
                 ROS_INFO("No image was found");
             }
         }
-
-        cv::waitKey(); // STOPS THE PROGRAM !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
     }  
     return template_id;
