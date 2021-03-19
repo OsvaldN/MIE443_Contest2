@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < boxes.templates.size(); i++){
 
-        cv::resize(boxes.templates[i], boxes.templates[i], cv::Size(1080,720)); // resize the image to fit the dimensions of the boxes
+        cv::resize(boxes.templates[i], boxes.templates[i], cv::Size(900,720)); // resize the image to fit the dimensions of the boxes
         
         cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create( minHessian );
         detector->detectAndCompute(boxes.templates[i], cv::noArray(), keypoints_object[i], descriptors_object[i]);
