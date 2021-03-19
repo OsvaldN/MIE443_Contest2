@@ -41,10 +41,3 @@ add_executable(webcam_publisher
 target_link_libraries(webcam_publisher  
     ${catkin_LIBRARIES}  
     ${OpenCV_LIBRARIES})
-
-#  OpenCV Demo
-add_executable(opencv_demo 
-    src/opencv_demo)
-target_link_libraries(opencv_demo
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBRARIES})

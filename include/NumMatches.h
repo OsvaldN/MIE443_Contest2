@@ -13,5 +13,6 @@
 
 #endif
 
-extern int NumMatches(cv::Mat& img_object, cv::Mat& img, int minHessian = 400, bool visual = false);
+extern int NumMatches(cv::Mat& img_object, std::vector<cv::KeyPoint> keypoints_object, cv::Mat& descriptors_object,  cv::Mat& img_scene, std::vector<cv::KeyPoint> keypoints_scene, cv::Mat& descriptors_scene, bool visual = false);
+
 

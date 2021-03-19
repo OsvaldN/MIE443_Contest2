@@ -17,5 +17,5 @@ class ImagePipeline {
     public:
         ImagePipeline(ros::NodeHandle& n);
         void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-        int getTemplateID(Boxes& boxes, bool visual = false,  bool verbose = false);
+        int getTemplateID(Boxes& boxes, std::vector<cv::KeyPoint> keypoints_object[], cv::Mat descriptors_object[], int minHessian = 400,  bool visual = false, bool verbose = false);
 };

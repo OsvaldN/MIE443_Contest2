@@ -1,6 +1,5 @@
 #include <imagePipeline.h>
 
-#define minHessian (350) // default vale is 400 (high is better matches but less points)
 #define minThreshMatches (20) //to detect whether an image was found
 
 #define IMAGE_TYPE sensor_msgs::image_encodings::BGR8
@@ -27,7 +26,7 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
     }    
 }
 
-int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a copy of boxes is feed into this function
+int ImagePipeline::getTemplateID(Boxes& boxes, std::vector<cv::KeyPoint> keypoints_object[], cv::Mat descriptors_object[], int minHessian,  bool visual, bool verbose) { // a copy of boxes is feed into this function
     int template_id = -1;
     if(!isValid) {
         std::cout << "ERROR: INVALID IMAGE!" << std::endl;
@@ -51,9 +50,17 @@ int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a
         int next_max_matches = 0; // the the 2nd most matches
         int confidence = 0; //save the confidence level of the choosen template
 
+        //-- Step 1: Detect the keypoints for the scene using SURF Detector, compute the descriptors
+
+        std::vector<cv::KeyPoint> keypoints_scene;
+        cv::Mat descriptors_scene;
+        cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create( minHessian );
+        detector->detectAndCompute(grey_img, cv::noArray(), keypoints_scene, descriptors_scene);
+
         for (int i = 0; i < boxes.templates.size(); i++){
 
-            int good_matches = NumMatches(boxes.templates[i], grey_img, minHessian, false);
+
+            int good_matches = NumMatches(boxes.templates[i], keypoints_object[i], descriptors_object[i], grey_img, keypoints_scene, descriptors_scene, false);
 
             if (good_matches > max_matches){
                 template_id = i;
@@ -76,8 +83,10 @@ int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a
         {
             if (visual)
             {
-                max_matches = NumMatches(boxes.templates[template_id], grey_img, minHessian, true);
+                max_matches = NumMatches(boxes.templates[template_id], keypoints_object[template_id], descriptors_object[template_id], grey_img, keypoints_scene, descriptors_scene, true);
+                cv::waitKey(5000);
             }
+            
             template_id = template_id + 1;
 
             if (verbose)
@@ -87,7 +96,7 @@ int ImagePipeline::getTemplateID(Boxes& boxes, bool visual, bool verbose) { // a
         }
         else
         {
-            template_id = -1;
+            template_id = 0;
 
             if (verbose)
             {

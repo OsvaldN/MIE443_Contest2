@@ -12,6 +12,7 @@
 // for writing in files
 #include <iostream>
 #include <fstream>
+#include <string>
 using namespace std;
 
 #define VIEWDIST (0.25)
@@ -24,6 +25,8 @@ using namespace std;
 #define Y_COORD 1
 #define PHI 2
 
+// of image deteection
+#define minHessian (350) // default vale is 400 (high is better matches but less points)
 
 std::vector<float> getViewPose(float boxX, float boxY, float boxPhi, bool random = false, bool verbose = true){
     /* 
@@ -68,6 +71,25 @@ int main(int argc, char** argv) {
     myfile << "This is the output file which will contain the output for Contest 2 run.\n";
     myfile.close();
 
+    std::string TagNames[16] = { "Blank image",
+                              "Tag_1 (Aibo robot dog)",
+                              "Tag_2 (Turtle)",
+                              "Tag_3 (Robot kangaroo)",
+                              "Tag_4 (Kangaroo)",
+                              "Tag_5 (Dog with ears up)",
+                              "Tag_6 (Cat)",
+                              "Tag_7 (Dog with ears down)",
+                              "Tag_8 (Turtlebot)",
+                              "Tag_9 (4-legged robot)",
+                              "Tag_10 (Dragonfly)",
+                              "Tag_11 (Baxter robot)",
+                              "Tag_12 (Pepper human robot)",
+                              "Tag_13 (Festo robot bird)",
+                              "Tag_14 (Parrot)",
+                              "Tag_15 (4-legged robot drawing)", };
+
+    bool DuplicateTags[16] = {false};
+
     // Initialize box coordinates and templates
     // get the coordinate of the boxs and the image templates to compare with
     // boxes.coords is a 2-D vector containing the boxes coordinates (10 boxes by 3 coodinates).  boxes.coords [0][2] is the first object's orientation
@@ -81,21 +103,17 @@ int main(int argc, char** argv) {
     // instantiate robot Pose object
     RobotPose robotPose(0,0,0);
 
-    // print location estimate and rotate the 
-    if (verbose) {
-        std::cout << "Confirming location. Initial Esimate: ";
-        std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
-            << robotPose.phi << ")." << std::endl;
-    }
-    
-    rotForTime(3.0, &vel_pub, verbose); // rotate for 3 seconds
 
-    if (verbose) {
-        std::cout << "Confirming location. New Esimate: ";
-        std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
+    // print location estimate and rotate the 
+    std::cout << "Confirming location. Initial Esimate: ";
+    std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
             << robotPose.phi << ")." << std::endl;
-    }
-   
+    //rotForTime(3, &vel_pub, true); //rotates for that number of seconds (at pi/6 rad/s)
+    rotForTime(3.0, &vel_pub, verbose); // rotate for 3 seconds
+    std::cout << "Confirming location. New Esimate: ";
+    std::cout << "(" << robotPose.x << ", " << robotPose.y << ", " 
+            << robotPose.phi << ")." << std::endl;
+
     // positions vector holds default "poses" (x,y,phi) to view each box. No random jiggle.
     std::vector<std::vector<float>> positions;
     //push starting position, this does not generalize to new positions
@@ -135,6 +153,19 @@ int main(int argc, char** argv) {
 
     // Initialize image objectand subscriber.
     ImagePipeline imagePipeline(n);
+
+    // find the keypoints for all the image tags before beginning
+    std::vector<cv::KeyPoint> keypoints_object[boxes.templates.size()];
+    cv::Mat descriptors_object[boxes.templates.size()];
+
+    for (int i = 0; i < boxes.templates.size(); i++){
+
+        cv::resize(boxes.templates[i], boxes.templates[i], cv::Size(1080,720)); // resize the image to fit the dimensions of the boxes
+        
+        cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create( minHessian );
+        detector->detectAndCompute(boxes.templates[i], cv::noArray(), keypoints_object[i], descriptors_object[i]);
+
+    }
 
     // Create a timer in Debug Mode to time the program execution
     std::chrono::time_point<std::chrono::system_clock> start;
@@ -186,18 +217,28 @@ int main(int argc, char** argv) {
         At this point, the robot has successfully reached the target location. 
         You can perform image detection at this point, before allowing the robot to move to the next location.
         **/
-        ros::spinOnce();
-        int TemplateID = imagePipeline.getTemplateID(boxes, false, true);
 
-        if (TemplateID > -1){
+
+        ros::spinOnce();
+        int TemplateID = imagePipeline.getTemplateID(boxes, keypoints_object, descriptors_object, minHessian, false, true);
+
+        if (!DuplicateTags[TemplateID]){
             myfile.open(OutputFileName, std::ios_base::app); // append instead of overwrite
-            myfile << "The tag image at location: " << "XXX " << "is: Tag_" << TemplateID << "\n";
+            myfile << "The tag image at location (x,y,phi): " << "XXX " << "is: " << TagNames[TemplateID] << "\n";
             myfile.close();
+            DuplicateTags[TemplateID] = true;
         }
         else{
             myfile.open(OutputFileName, std::ios_base::app); // append instead of overwrite
-            myfile << "The tag image at location: " << "XXX " << "is: blank \n";
+            myfile << "The tag image at location (x,y,phi): " << "XXX " << "is: " << TagNames[TemplateID] << " and it is a duplicate image\n";
             myfile.close();
+        }
+
+
+        // REMOVE THIS - this is just to print the current time !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (verbose) {
+            secondsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now()-start).count();
+            std::cout << "Current time in seconds is: " << secondsElapsed << '\n';
         }
 
         ros::Duration(0.01).sleep();
@@ -206,7 +247,7 @@ int main(int argc, char** argv) {
     // Print out the elapsed program execution time
     if (verbose) {
         secondsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now()-start).count();
-        std::cout << "Program Terminated - Reached start location\nProgram exeuction took this many seconds: " << secondsElapsed << '\n';
+        std::cout << "Program exeuction took this many seconds: " << secondsElapsed << '\n';
     }
 
     return 0;

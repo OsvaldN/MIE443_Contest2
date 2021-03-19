@@ -57,18 +57,11 @@ bool inBox(cv::Point2f A, cv::Point2f B, cv::Point2f C, cv::Point2f D, cv::Point
 
 
 
-int NumMatches(cv::Mat& img_object, cv::Mat& img_scene, int minHessian, bool visual) {
+int NumMatches(cv::Mat& img_object, std::vector<cv::KeyPoint> keypoints_object, cv::Mat& descriptors_object,  cv::Mat& img_scene, std::vector<cv::KeyPoint> keypoints_scene, cv::Mat& descriptors_scene, bool visual) {
 
     // TO DO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // play around with the minHessian to see what produces good values.
     // Maybe a function could be used if we can find some correlation with minHessian to something else eg. distance to image or overall brightness or something
-
-    //-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
-    Ptr<SURF> detector = SURF::create( minHessian );
-    std::vector<KeyPoint> keypoints_object, keypoints_scene;
-    Mat descriptors_object, descriptors_scene;
-    detector->detectAndCompute( img_object, noArray(), keypoints_object, descriptors_object );
-    detector->detectAndCompute( img_scene, noArray(), keypoints_scene, descriptors_scene );
 
     // added to prevent OpenCV Error: Unsupported format or combination of formats (type=0) in buildIndex_
     if (descriptors_object.empty() || descriptors_scene.empty()){ 
@@ -97,7 +90,6 @@ int NumMatches(cv::Mat& img_object, cv::Mat& img_scene, int minHessian, bool vis
     std::vector<Point2f> obj;
     std::vector<Point2f> scene;
     std::vector<Point2f> scene_ideal; // obj*Homography = scene_ideal
-
 
 
     for( size_t i = 0; i < good_matches.size(); i++ )
