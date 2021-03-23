@@ -57,7 +57,7 @@ std::vector<float> getViewPose(float boxX, float boxY, float boxPhi, bool random
     return viewPose;
 }
 
-flaot getPhi(float xBox, float yBox, float xRob, float yRob, bool verbose = true){
+float getPhi(float xBox, float yBox, float xRob, float yRob, bool verbose = true){
     // returns phi angle the robot should position itself to in order to be looking at a box
     double xDiff = xBox - xRob;
     double yDiff = yBox - yRob;
