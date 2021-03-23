@@ -202,10 +202,6 @@ int main(int argc, char** argv) {
     ros::Rate loop_rate(10);
 
     while(ros::ok()) {
-        // Loop through the paths until we reach the end of the path array
-        if (path_counter > path.size()-1){
-            break;
-        }
 
         ros::spinOnce();
 
@@ -247,7 +243,7 @@ int main(int argc, char** argv) {
             ros::spinOnce();
             // centre of box in xy is boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1]
             // pose is robotPose.x, robotPose.y, robotPose.phi
-            desiredPhi = getPhi(boxes.coords[path[path_counter]-1][0], boxes.coords[path[path_counter]-1][1], robotPose.x, robotPose.y);
+            desiredPhi = getPhi(boxes.coords[path[path_counter]-1][X_COORD], boxes.coords[path[path_counter]-1][Y_COORD], robotPose.x, robotPose.y);
             // old code for rotation
             // // rotate the robot to look at the box
             // //Navigation::moveToGoal(robotPose.x, robotPose.y, desiredPhi);
@@ -265,7 +261,6 @@ int main(int argc, char** argv) {
             }
         }
         
-        path_counter += 1; // The path_counter will iterate through the path array that was generated from TSP path planning algorithm
 
         /** ***** NOTE: IMAGE DETECTION FUNCTION CALL SHOULD GO HERE *****
         At this point, the robot has successfully reached the target location. 
@@ -275,24 +270,24 @@ int main(int argc, char** argv) {
 
         ros::spinOnce();
         int TemplateID = imagePipeline.getTemplateID(boxes, keypoints_object, descriptors_object, minHessian, false, true);
-
+        
         if (!DuplicateTags[TemplateID]){
             myfile.open(OutputFileName, std::ios_base::app); // append instead of overwrite
-            myfile << "The tag image at location (x,y,phi): " << "XXX " << "is: " << TagNames[TemplateID] << "\n";
+            myfile << "The tag image at location (x,y,phi): " << " " << boxes.coords[path[path_counter]-1][X_COORD] << ", " << boxes.coords[path[path_counter]-1][Y_COORD] << ", " << boxes.coords[path[path_counter]-1][PHI] << " is: " << TagNames[TemplateID] << " and it is a duplicate image\n";
             myfile.close();
             DuplicateTags[TemplateID] = true;
         }
         else{
             myfile.open(OutputFileName, std::ios_base::app); // append instead of overwrite
-            myfile << "The tag image at location (x,y,phi): " << "XXX " << "is: " << TagNames[TemplateID] << " and it is a duplicate image\n";
+            myfile << "The tag image at location (x,y,phi): " << " " << boxes.coords[path[path_counter]-1][X_COORD] << ", " << boxes.coords[path[path_counter]-1][Y_COORD] << ", " << boxes.coords[path[path_counter]-1][PHI] << " is: " << TagNames[TemplateID] << " and it is a duplicate image\n";
             myfile.close();
         }
-
-
-        // REMOVE THIS - this is just to print the current time !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if (verbose) {
-            secondsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now()-start).count();
-            std::cout << "Current time in seconds is: " << secondsElapsed << '\n';
+        
+        path_counter += 1; // The path_counter will iterate through the path array that was generated from TSP path planning algorithm
+        
+        // Loop through the paths until we reach the end of the path array
+        if (path_counter > path.size()-1){
+            break;
         }
 
         ros::Duration(0.01).sleep();

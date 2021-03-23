@@ -1,8 +1,18 @@
-# MIE443_Contest2
+# MIE 443 - Contest 2 Deliverable
 
-## running the simulation
+Date: March 23, 2021
+Group: 20
 
-* Please update this as progress is made *
+## Team:
+
+|       Name       | Student Number |
+|:----------------:|:--------------:|
+|   Stefan Albers  |   1003476204   |
+| Mithun Jothiravi |   1002321258   |
+|   Osvald Nitski  |   1002456987   |
+|    David Rolko   |   1003037420   |2
+
+## Running Group 20 Contest 2 Submission
 
 Open three terminals. Navigate to `catkin_ws` in each of them.
 
@@ -12,11 +22,8 @@ Open three terminals. Navigate to `catkin_ws` in each of them.
 
 3. In terminal #3 run `rosrun mie443_contest2 contest2`
 
-## Notes
-- currently not `using namespace std` anywhere
-- using `#pragma once` in header files rather than `#ifndef ...` as used in contest 1
+All the output results can be found in the `Output_file.txt` file located in the `catkin_ws`.
 
-## TODO:
-- update **include/TSP.cpp** so that `distMatrix(coords)` uses actual distance from path planning rather than euclidean distance
-- figure out robot starting position and modify **src/contest2.cpp** so that this position is the first one pushed to `positions`, currently assumed to be (0.0, 0.0)
-- try other TSP solvers?
+## Repository:
+
+Entire project repo can be accessed [here](https://github.com/OsvaldN/MIE443_Contest2/tree/nav_osvald).
