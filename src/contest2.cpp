@@ -254,13 +254,13 @@ int main(int argc, char** argv) {
         // //Navigation::moveToGoal(robotPose.x, robotPose.y, desiredPhi);
         
         // get faster direction of rotation
-        angleDiff = angleCorrect(desiredPhi-robotPose.phi);
+        angleDiff = angleCorrect(desiredPhi, robotPose.phi);
         dir = (angleDiff > M_PI) - (angleDiff < M_PI);
 
         //rotate to desired phi
-        while (fabs(robotPose.phi - desiredPhi) <=0.05 {    
+        while (fabs(robotPose.phi - desiredPhi) <=0.05) {    
             // publish to update velocity, spin to update yaw (clears velocity)
-            VelPub(dir*M_PI/6, 0.0, vel_pub);
+            VelPub(dir*M_PI/6, 0.0, &vel_pub);
             loop_rate.sleep();
             ros::spinOnce();
         }
