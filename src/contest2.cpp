@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
     // positions vector holds default "poses" (x,y,phi) to view each box. No random jiggle.
     std::vector<std::vector<float>> positions;
     //push starting position, this does not generalize to new positions
-    positions.push_back({0, 0, 0});
+    positions.push_back({robotPose.x, robotPose.y, robotPose.phi});
 
     std::vector<float> viewPose;
     for(int i = 0; i < boxes.coords.size(); ++i) {
