@@ -57,15 +57,25 @@ std::vector<float> getViewPose(float boxX, float boxY, float boxPhi, bool random
     return viewPose;
 }
 
+float angleCorrect(float curr, float start){
+    // corrects angle discontinuity in yaw
+    float x = fabs(curr-start);
+    float y = fabs(2*M_PI+curr-start);
+    float z = fabs(-2*M_PI+curr-start);
+    return x < y ? (x < z ? x : z) : (y < z ? y : z); // bootleg way to get min of the three
+}
+
 float getPhi(float xBox, float yBox, float xRob, float yRob, bool verbose = true){
     // returns phi angle the robot should position itself to in order to be looking at a box
     double xDiff = xBox - xRob;
     double yDiff = yBox - yRob;
+
     // atan2 already returns an angle in the range [-pi, pi]
     double desiredPhi = atan2(yDiff, xDiff);
     if (verbose){
         ROS_INFO("Redundant 'towards box' rotatoin to phi: %f", desiredPhi);
     }
+
     return atan2(yDiff, xDiff);
 }
 
@@ -186,8 +196,11 @@ int main(int argc, char** argv) {
 
     // for repositioning once the robot is at a target position
     float desiredPhi;
+    float angleDiff;
+    float dir;
     // Execute strategy.
-    
+    ros::Rate loop_rate(10);
+
     while(ros::ok()) {
 
         // Loop through the paths until we reach the end of the path array
@@ -236,8 +249,21 @@ int main(int argc, char** argv) {
         // centre of box in xy is boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1]
         // pose is robotPose.x, robotPose.y, robotPose.phi
         desiredPhi = getPhi(boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1], robotPose.x, robotPose.y);
-        // rotate the robot to look at the box
-        Navigation::moveToGoal(robotPose.x, robotPose.y, desiredPhi);
+        // old code for rotation
+        // // rotate the robot to look at the box
+        // //Navigation::moveToGoal(robotPose.x, robotPose.y, desiredPhi);
+        
+        // get faster direction of rotation
+        angleDiff = angleCorrect(desiredPhi-robotPose.phi);
+        dir = (angleDiff > M_PI) - (angleDiff < M_PI);
+
+        //rotate to desired phi
+        while (fabs(robotPose.phi - desiredPhi) <=0.05 {    
+            // publish to update velocity, spin to update yaw (clears velocity)
+            VelPub(dir*M_PI/6, 0.0, vel_pub);
+            loop_rate.sleep();
+            ros::spinOnce();
+        }
         
         path_counter += 1; // The path_counter will iterate through the path array that was generated from TSP path planning algorithm
 
