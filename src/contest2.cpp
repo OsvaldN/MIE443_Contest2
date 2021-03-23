@@ -57,6 +57,18 @@ std::vector<float> getViewPose(float boxX, float boxY, float boxPhi, bool random
     return viewPose;
 }
 
+flaot getPhi(float xBox, float yBox, float xRob, float yRob, bool verbose = true){
+    // returns phi angle the robot should position itself to in order to be looking at a box
+    double xDiff = xBox - xRob;
+    double yDiff = yBox - yRob;
+    // atan2 already returns an angle in the range [-pi, pi]
+    double desiredPhi = atan2(yDiff, xDiff);
+    if (verbose){
+        ROS_INFO("Redundant 'towards box' rotatoin to phi: %f", desiredPhi);
+    }
+    return atan2(yDiff, xDiff);
+}
+
 int main(int argc, char** argv) {
     // Setup ROS.
     ros::init(argc, argv, "contest2");
@@ -100,9 +112,9 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    // instantiate robot Pose object
+    // instantiate robot Pose object and subscriber
     RobotPose robotPose(0,0,0);
-
+    ros::Subscriber amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
 
     // print location estimate and rotate the 
     std::cout << "Confirming location. Initial Esimate: ";
@@ -172,6 +184,8 @@ int main(int argc, char** argv) {
     start = std::chrono::system_clock::now();
     uint64_t secondsElapsed = 0;
 
+    // for repositioning once the robot is at a target position
+    float desiredPhi;
     // Execute strategy.
     
     while(ros::ok()) {
@@ -211,6 +225,20 @@ int main(int argc, char** argv) {
         if (verbose) {
             ROS_INFO("DEBUG: Finished moving to path index: %d", path_counter);
         }
+        
+        
+        //////////////////////////////////////////
+        // Redundant turn towards box procedure //
+        //////////////////////////////////////////
+
+        // update current pose estimate
+        ros::spinOnce();
+        // centre of box in xy is boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1]
+        // pose is robotPose.x, robotPose.y, robotPose.phi
+        desiredPhi = getPhi(boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1], robotPose.x, robotPose.y);
+        // rotate the robot to look at the box
+        Navigation::moveToGoal(robotPose.x, robotPose.y, desiredPhi);
+        
         path_counter += 1; // The path_counter will iterate through the path array that was generated from TSP path planning algorithm
 
         /** ***** NOTE: IMAGE DETECTION FUNCTION CALL SHOULD GO HERE *****
