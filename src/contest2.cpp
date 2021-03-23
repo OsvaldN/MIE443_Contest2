@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
             ros::spinOnce();
             // centre of box in xy is boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1]
             // pose is robotPose.x, robotPose.y, robotPose.phi
-            desiredPhi = getPhi(boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1], robotPose.x, robotPose.y);
+            desiredPhi = getPhi(boxes.coords[path[path_counter]-1][0], boxes.coords[path[path_counter]-1][1], robotPose.x, robotPose.y);
             // old code for rotation
             // // rotate the robot to look at the box
             // //Navigation::moveToGoal(robotPose.x, robotPose.y, desiredPhi);
