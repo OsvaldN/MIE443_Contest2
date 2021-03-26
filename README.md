@@ -12,6 +12,10 @@ Group: 20
 |   Osvald Nitski  |   1002456987   |
 |    David Rolko   |   1003037420   |2
 
+## About
+
+This is a submission for the design course **MIE443: Mechatronics Systems: Design and Integration** at the University of Toronto
+
 ## Running Group 20 Contest 2 Submission
 
 Open three terminals. Navigate to `catkin_ws` in each of them.
@@ -24,6 +28,6 @@ Open three terminals. Navigate to `catkin_ws` in each of them.
 
 All the output results can be found in the `Output_file.txt` file located in the `catkin_ws`.
 
-## Repository:
+## Previous Contest Repository:
 
-Entire project repo can be accessed [here](https://github.com/OsvaldN/MIE443_Contest2/tree/nav_osvald).
+MIE443 Contest 1 repository is [here](https://github.com/OsvaldN/MIE443_Contest1).
