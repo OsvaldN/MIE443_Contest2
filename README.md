@@ -1,5 +1,7 @@
 # MIE 443 - Contest 2 Deliverable
 
+This is a submission for the design course **MIE443: Mechatronics Systems: Design and Integration** at the University of Toronto
+
 Date: March 23, 2021
 Group: 20
 
@@ -12,9 +14,6 @@ Group: 20
 |   Osvald Nitski  |   1002456987   |
 |    David Rolko   |   1003037420   |2
 
-## About
-
-This is a submission for the design course **MIE443: Mechatronics Systems: Design and Integration** at the University of Toronto
 
 ## Running Group 20 Contest 2 Submission
 
