@@ -141,6 +141,7 @@ int main(int argc, char** argv) {
     //push starting position, this does not generalize to new positions
     positions.push_back({robotPose.x, robotPose.y, robotPose.phi});
 
+
     std::vector<float> viewPose;
     for(int i = 0; i < boxes.coords.size(); ++i) {
         if (verbose) {
