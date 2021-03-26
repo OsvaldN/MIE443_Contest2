@@ -139,7 +139,8 @@ int main(int argc, char** argv) {
     // positions vector holds default "poses" (x,y,phi) to view each box. No random jiggle.
     std::vector<std::vector<float>> positions;
     //push starting position, this does not generalize to new positions
-    positions.push_back({0, 0, 0});
+    positions.push_back({robotPose.x, robotPose.y, robotPose.phi});
+
 
     std::vector<float> viewPose;
     for(int i = 0; i < boxes.coords.size(); ++i) {
@@ -203,11 +204,6 @@ int main(int argc, char** argv) {
 
     while(ros::ok()) {
 
-        // Loop through the paths until we reach the end of the path array
-        if (path_counter > path.size()-1){
-            break;
-        }
-
         ros::spinOnce();
 
         // Navigation code here
@@ -243,29 +239,29 @@ int main(int argc, char** argv) {
         //////////////////////////////////////////
         // Redundant turn towards box procedure //
         //////////////////////////////////////////
-
-        // update current pose estimate
-        ros::spinOnce();
-        // centre of box in xy is boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1]
-        // pose is robotPose.x, robotPose.y, robotPose.phi
-        desiredPhi = getPhi(boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1], robotPose.x, robotPose.y);
-        // old code for rotation
-        // // rotate the robot to look at the box
-        // //Navigation::moveToGoal(robotPose.x, robotPose.y, desiredPhi);
-        
-        // get faster direction of rotation
-        angleDiff = angleCorrect(desiredPhi-robotPose.phi);
-        dir = (angleDiff > M_PI) - (angleDiff < M_PI);
-
-        //rotate to desired phi
-        while (fabs(robotPose.phi - desiredPhi) <=0.05 {    
-            // publish to update velocity, spin to update yaw (clears velocity)
-            VelPub(dir*M_PI/6, 0.0, vel_pub);
-            loop_rate.sleep();
+        if (path[path_counter] != 0) { 
+            // update current pose estimate
             ros::spinOnce();
+            // centre of box in xy is boxes.coords[path[path_counter]][0], boxes.coords[path[path_counter]][1]
+            // pose is robotPose.x, robotPose.y, robotPose.phi
+            desiredPhi = getPhi(boxes.coords[path[path_counter]-1][X_COORD], boxes.coords[path[path_counter]-1][Y_COORD], robotPose.x, robotPose.y);
+            // old code for rotation
+            // // rotate the robot to look at the box
+            // //Navigation::moveToGoal(robotPose.x, robotPose.y, desiredPhi);
+            
+            // get faster direction of rotation
+            angleDiff = angleCorrect(desiredPhi, robotPose.phi);
+            dir = (angleDiff > M_PI) - (angleDiff < M_PI);
+
+            //rotate to desired phi
+            while (fabs(robotPose.phi - desiredPhi) <=0.05) {    
+                // publish to update velocity, spin to update yaw (clears velocity)
+                VelPub(dir*M_PI/6, 0.0, &vel_pub);
+                loop_rate.sleep();
+                ros::spinOnce();
+            }
         }
         
-        path_counter += 1; // The path_counter will iterate through the path array that was generated from TSP path planning algorithm
 
         /** ***** NOTE: IMAGE DETECTION FUNCTION CALL SHOULD GO HERE *****
         At this point, the robot has successfully reached the target location. 
@@ -275,24 +271,24 @@ int main(int argc, char** argv) {
 
         ros::spinOnce();
         int TemplateID = imagePipeline.getTemplateID(boxes, keypoints_object, descriptors_object, minHessian, false, true);
-
+        
         if (!DuplicateTags[TemplateID]){
             myfile.open(OutputFileName, std::ios_base::app); // append instead of overwrite
-            myfile << "The tag image at location (x,y,phi): " << "XXX " << "is: " << TagNames[TemplateID] << "\n";
+            myfile << "The tag image at location (x,y,phi): " << " " << boxes.coords[path[path_counter]-1][X_COORD] << ", " << boxes.coords[path[path_counter]-1][Y_COORD] << ", " << boxes.coords[path[path_counter]-1][PHI] << " is: " << TagNames[TemplateID] << " and it is a duplicate image\n";
             myfile.close();
             DuplicateTags[TemplateID] = true;
         }
         else{
             myfile.open(OutputFileName, std::ios_base::app); // append instead of overwrite
-            myfile << "The tag image at location (x,y,phi): " << "XXX " << "is: " << TagNames[TemplateID] << " and it is a duplicate image\n";
+            myfile << "The tag image at location (x,y,phi): " << " " << boxes.coords[path[path_counter]-1][X_COORD] << ", " << boxes.coords[path[path_counter]-1][Y_COORD] << ", " << boxes.coords[path[path_counter]-1][PHI] << " is: " << TagNames[TemplateID] << " and it is a duplicate image\n";
             myfile.close();
         }
-
-
-        // REMOVE THIS - this is just to print the current time !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if (verbose) {
-            secondsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now()-start).count();
-            std::cout << "Current time in seconds is: " << secondsElapsed << '\n';
+        
+        path_counter += 1; // The path_counter will iterate through the path array that was generated from TSP path planning algorithm
+        
+        // Loop through the paths until we reach the end of the path array
+        if (path_counter > path.size()-1){
+            break;
         }
 
         ros::Duration(0.01).sleep();
